@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IdentityShield — Online Identity Exposure Management</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            navy: {
+              800: '#0f1f38',
+              900: '#0a1628',
+              950: '#060e1b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
+
+  <!-- ================= TOP NOTIFICATION TOAST ================= -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-xl shadow-2xl border border-slate-800 flex items-center space-x-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span id="toast-msg">Notification</span>
+    </div>
+  </div>
+
+  <!-- ================= PUBLIC HEADER ================= -->
+  <header id="public-header" class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div onclick="navigate('landing')" class="flex items-center space-x-2.5 cursor-pointer">
+        <div class="w-8 h-8 rounded-lg bg-navy-900 text-white flex items-center justify-center">
+          <i data-lucide="shield" class="w-4 h-4 text-sky-400"></i>
+        </div>
+        <span class="font-bold text-lg text-slate-900 tracking-tight">IdentityShield</span>
+        <span class="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-sky-100 text-sky-900 uppercase">Demo</span>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
+        <a href="#problem" onclick="navigate('landing')" class="hover:text-navy-900">The Threat</a>
+        <a href="#how-it-works" onclick="navigate('landing')" class="hover:text-navy-900">How It Works</a>
+        <a href="#privacy" onclick="navigate('landing')" class="hover:text-navy-900">Traceability</a>
+        <a href="#features" onclick="navigate('landing')" class="hover:text-navy-900">Features</a>
+      </nav>
+
+      <div class="flex items-center space-x-3">
+        <button onclick="navigate('login')" class="text-xs sm:text-sm font-medium px-3 py-1.5 text-slate-700 hover:text-slate-900">Sign In</button>
+        <button onclick="navigate('register')" class="text-xs sm:text-sm font-medium px-4 py-2 bg-navy-900 hover:bg-slate-800 text-white rounded-lg shadow-sm">
+          Get Started
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN APP WRAPPER ================= -->
+  <div class="flex-1 flex flex-col md:flex-row w-full">
+
+    <!-- DASHBOARD SIDEBAR (Visible only when logged in) -->
+    <aside id="app-sidebar" class="hidden md:flex w-64 bg-navy-900 text-slate-300 flex-col h-screen sticky top-0 border-r border-slate-800 select-none">
+      <div class="p-5 flex items-center space-x-2.5 border-b border-slate-800 cursor-pointer" onclick="navigate('dashboard')">
+        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+          <i data-lucide="shield" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <span class="font-bold text-white text-base block leading-tight">IdentityShield</span>
+          <span class="text-[9px] text-slate-400 font-mono tracking-wider">PRIVACY SUITE</span>
+        </div>
+      </div>
+
+      <div class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <button onclick="navigate('dashboard')" class="sidebar-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-800 text-slate-300">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="navigate('services')" class="sidebar-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-800 text-slate-300">
+          <i data-lucide="eye" class="w-4 h-4"></i>
+          <span>Service Monitor</span>
+        </button>
+        <button onclick="navigate('generate')" class="sidebar-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-800 text-slate-300">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Generate Alias</span>
+        </button>
+        <button onclick="navigate('exposure')" class="sidebar-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-800 text-slate-300">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            <span>Exposure Monitor</span>
+          </div>
+          <span id="sidebar-alert-badge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">0</span>
+        </button>
+        <button onclick="navigate('url-tracker')" class="sidebar-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-800 text-slate-300">
+          <i data-lucide="link-2" class="w-4 h-4 text-sky-400"></i>
+          <span>URL Security Tracker</span>
+        </button>
+        <button onclick="navigate('privacy')" class="sidebar-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-800 text-slate-300">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Privacy Dashboard</span>
+        </button>
+        <button onclick="navigate('summary')" class="sidebar-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-800 text-slate-300">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          <span>Summary Report</span>
+        </button>
+        <button onclick="navigate('account')" class="sidebar-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-800 text-slate-300">
+          <i data-lucide="user" class="w-4 h-4"></i>
+          <span>Account Settings</span>
+        </button>
+      </div>
+
+      <!-- User footer in sidebar -->
+      <div class="p-3 border-t border-slate-800 bg-navy-950">
+        <div class="flex items-center space-x-2.5 px-2 py-2 mb-2">
+          <div id="sidebar-user-avatar" class="w-7 h-7 rounded-full bg-blue-900 text-sky-300 flex items-center justify-center font-bold text-xs">U</div>
+          <div class="min-w-0 flex-1">
+            <p id="sidebar-user-name" class="text-xs font-bold text-white truncate">User</p>
+            <p id="sidebar-user-email" class="text-[10px] text-slate-400 font-mono truncate">loading...</p>
+          </div>
+        </div>
+        <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-3 py-1.5 text-xs text-slate-400 hover:text-rose-400 rounded-lg hover:bg-rose-950/30">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MOBILE HEADER FOR AUTHENTICATED USERS -->
+    <div id="mobile-auth-bar" class="hidden flex md:hidden bg-navy-900 text-white p-4 items-center justify-between">
+      <div class="flex items-center space-x-2 cursor-pointer" onclick="navigate('dashboard')">
+        <i data-lucide="shield" class="w-5 h-5 text-sky-400"></i>
+        <span class="font-bold">IdentityShield</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="navigate('generate')" class="p-1.5 rounded bg-slate-800 text-xs"><i data-lucide="plus" class="w-4 h-4"></i></button>
+        <button onclick="toggleMobileNav()" class="p-1.5 rounded bg-slate-800 text-xs"><i data-lucide="menu" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+
+    <!-- MOBILE NAVIGATION DRAWER -->
+    <div id="mobile-drawer" class="hidden md:hidden fixed inset-0 z-50 bg-slate-950/70">
+      <div class="w-64 bg-navy-900 h-full p-4 flex flex-col text-white">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <span class="font-bold text-sm">Navigation</span>
+          <button onclick="toggleMobileNav()"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-2 mt-4 text-xs font-semibold">
+          <button onclick="navigate('dashboard'); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded hover:bg-slate-800">Dashboard</button>
+          <button onclick="navigate('services'); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded hover:bg-slate-800">Service Monitor</button>
+          <button onclick="navigate('generate'); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded hover:bg-slate-800">Generate Alias</button>
+          <button onclick="navigate('exposure'); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded hover:bg-slate-800">Exposure Monitor</button>
+          <button onclick="navigate('url-tracker'); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded hover:bg-slate-800 text-sky-300">URL Security Tracker</button>
+          <button onclick="navigate('privacy'); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded hover:bg-slate-800">Privacy Dashboard</button>
+          <button onclick="navigate('summary'); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded hover:bg-slate-800">Summary</button>
+          <button onclick="navigate('account'); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded hover:bg-slate-800">Account</button>
+          <button onclick="logout(); toggleMobileNav();" class="w-full text-left py-2 px-3 rounded text-rose-400 hover:bg-slate-800 mt-4">Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main id="main-content" class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+      
+      <!-- ================= 1. LANDING PAGE ================= -->
+      <section id="view-landing" class="space-y-20 py-4">
+        <!-- Hero -->
+        <div class="grid lg:grid-cols-12 gap-12 items-center pt-8">
+          <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-950 text-xs font-semibold">
+              <i data-lucide="shield-check" class="w-4 h-4 text-blue-800"></i>
+              <span>One User. Multiple Controlled Identities. Full Visibility.</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-tight">
+              Protect Your Identity. <br class="hidden sm:inline"/>
+              <span class="text-blue-900">Control Your Exposure.</span>
+            </h1>
+            <p class="text-slate-600 text-base sm:text-lg max-w-xl mx-auto lg:mx-0">
+              IdentityShield helps you use separate, traceable identities for online services so you can reduce unnecessary exposure and understand where suspicious activity originates.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+              <button onclick="navigate('register')" class="w-full sm:w-auto px-6 py-3 bg-navy-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-sm">
+                Create Your Protected Identity
+              </button>
+              <a href="#how-it-works" class="w-full sm:w-auto px-6 py-3 border border-slate-300 hover:bg-slate-100 font-semibold rounded-lg text-slate-700 text-center">
+                See How It Works
+              </a>
+            </div>
+          </div>
+
+          <!-- Hero Graphic Card -->
+          <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span class="text-xs font-mono text-slate-400">identityshield.local/vault</span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Active Protection</span>
+            </div>
+            <div class="bg-navy-900 text-white p-4 rounded-xl space-y-1">
+              <p class="text-[10px] font-mono text-sky-400 uppercase tracking-wider">Root Protected Identity</p>
+              <p class="font-mono text-sm sm:text-base font-bold">alex-82KF@identityshield.local</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Services Protected</span>
+                <p class="text-xl font-bold text-slate-900 mt-1">12 Services</p>
+              </div>
+              <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Privacy Score</span>
+                <p class="text-xl font-bold text-emerald-600 mt-1">86 / 100</p>
+              </div>
+            </div>
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-start space-x-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+              <span>Simulated exposure alert detected on <strong>shop-41LM@...</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Problem Section -->
+        <div id="problem" class="bg-navy-900 text-white p-8 sm:p-12 rounded-2xl space-y-6">
+          <div class="max-w-2xl">
+            <span class="text-sky-400 font-mono text-xs font-bold tracking-widest uppercase">The Underlying Problem</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold mt-1">Your email address can become a permanent identifier.</h2>
+            <p class="text-slate-300 text-sm mt-3 leading-relaxed">
+              People reuse the exact same personal email address across newsletters, shopping portals, events, downloads, and trials. Once shared, you lose visibility into how that identity is stored, brokered, or leaked.
+            </p>
+          </div>
+          <div class="grid sm:grid-cols-3 gap-4 pt-4 text-xs text-slate-300">
+            <div class="p-4 rounded-xl bg-slate-800/80 border border-slate-700">
+              <p class="font-bold text-white mb-1">Persistent Fingerprint</p>
+              Cross-site trackers correlate profiles by using your constant personal email.
+            </div>
+            <div class="p-4 rounded-xl bg-slate-800/80 border border-slate-700">
+              <p class="font-bold text-white mb-1">Zero Leak Attribution</p>
+              When spam arrives, it's impossible to know which service leaked your address.
+            </div>
+            <div class="p-4 rounded-xl bg-slate-800/80 border border-slate-700">
+              <p class="font-bold text-white mb-1">No Targeted Revocation</p>
+              You cannot shut down spam without abandoning your primary inbox completely.
+            </div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div id="how-it-works" class="space-y-8">
+          <div class="text-center max-w-2xl mx-auto">
+            <h2 class="text-xs font-bold tracking-widest uppercase text-blue-900">Workflow</h2>
+            <h3 class="text-3xl font-extrabold text-slate-900 mt-1">How IdentityShield Works</h3>
+          </div>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-xl border border-slate-200">
+              <span class="text-2xl font-mono font-bold text-slate-300">01</span>
+              <p class="text-xs font-bold text-blue-800 uppercase mt-2">Protect</p>
+              <h4 class="font-bold text-slate-900 mt-1">Create Protected Identity</h4>
+              <p class="text-xs text-slate-600 mt-2">Initialize your private account. Your actual personal email is completely shielded.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200">
+              <span class="text-2xl font-mono font-bold text-slate-300">02</span>
+              <p class="text-xs font-bold text-blue-800 uppercase mt-2">Separate</p>
+              <h4 class="font-bold text-slate-900 mt-1">Generate Service Alias</h4>
+              <p class="text-xs text-slate-600 mt-2">Produce a unique, service-specific alias (e.g. amazon-7K2P@...) for each website.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200">
+              <span class="text-2xl font-mono font-bold text-slate-300">03</span>
+              <p class="text-xs font-bold text-blue-800 uppercase mt-2">Monitor</p>
+              <h4 class="font-bold text-slate-900 mt-1">Track Communications</h4>
+              <p class="text-xs text-slate-600 mt-2">Track sender activity. Any unrecognized domain triggers an exposure telemetry alert.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200">
+              <span class="text-2xl font-mono font-bold text-slate-300">04</span>
+              <p class="text-xs font-bold text-blue-800 uppercase mt-2">Control</p>
+              <h4 class="font-bold text-slate-900 mt-1">Disable or Rotate</h4>
+              <p class="text-xs text-slate-600 mt-2">Investigate unauthorized activity. Disable or rotate that single alias with one click.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Privacy Comparison -->
+        <div id="privacy" class="grid md:grid-cols-2 gap-8">
+          <div class="bg-rose-50/40 p-6 rounded-2xl border border-rose-200 space-y-4">
+            <span class="px-2.5 py-1 rounded bg-rose-100 text-rose-800 text-xs font-bold uppercase">Traditional Signup</span>
+            <h4 class="font-bold text-lg text-slate-900">Personal Email Shared Everywhere</h4>
+            <div class="space-y-2 font-mono text-xs text-slate-700">
+              <div class="p-2 bg-white rounded border border-rose-200">Personal Email (alex@gmail.com)</div>
+              <div class="text-center text-rose-500 font-bold">↓ Multiple Services</div>
+              <div class="p-2 bg-white rounded border border-rose-200">Same Identity Used Everywhere</div>
+              <div class="text-center text-rose-500 font-bold">↓ Impossible to Trace</div>
+              <div class="p-2 bg-rose-100 rounded text-rose-900 font-semibold">Spam and Data Leaks Cannot Be Stopped</div>
+            </div>
+          </div>
+
+          <div class="bg-blue-50/40 p-6 rounded-2xl border border-blue-200 space-y-4">
+            <span class="px-2.5 py-1 rounded bg-blue-100 text-blue-900 text-xs font-bold uppercase">IdentityShield Architecture</span>
+            <h4 class="font-bold text-lg text-slate-900">Isolated Service Perimeter</h4>
+            <div class="space-y-2 font-mono text-xs text-slate-700">
+              <div class="p-2 bg-white rounded border border-blue-200">Protected Account</div>
+              <div class="text-center text-blue-600 font-bold">↓ Unique Service Alias</div>
+              <div class="p-2 bg-white rounded border border-blue-200">amazon-91AX@... | news-82KF@...</div>
+              <div class="text-center text-blue-600 font-bold">↓ 100% Traceable Exposure</div>
+              <div class="p-2 bg-emerald-100 rounded text-emerald-950 font-semibold">One-Click Disable / Rotate Without Impact</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div id="features" class="space-y-8">
+          <div class="text-center max-w-2xl mx-auto">
+            <h2 class="text-xs font-bold tracking-widest uppercase text-blue-900">Platform Features</h2>
+            <h3 class="text-3xl font-extrabold text-slate-900 mt-1">Built for Total Visibility & Control</h3>
+          </div>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            <div class="bg-white p-5 rounded-xl border border-slate-200">
+              <i data-lucide="layers" class="w-5 h-5 text-blue-900 mb-2"></i>
+              <h5 class="font-bold text-sm text-slate-900">Service-Specific Aliases</h5>
+              <p class="text-slate-500 mt-1">Generate dedicated identities per merchant or web platform.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200">
+              <i data-lucide="file-search" class="w-5 h-5 text-blue-900 mb-2"></i>
+              <h5 class="font-bold text-sm text-slate-900">Identity Traceability</h5>
+              <p class="text-slate-500 mt-1">Know exactly which service was associated with incoming messages.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200">
+              <i data-lucide="radio" class="w-5 h-5 text-blue-900 mb-2"></i>
+              <h5 class="font-bold text-sm text-slate-900">Exposure Monitoring</h5>
+              <p class="text-slate-500 mt-1">Flag unauthorized third-party senders in real time.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200">
+              <i data-lucide="sliders" class="w-5 h-5 text-blue-900 mb-2"></i>
+              <h5 class="font-bold text-sm text-slate-900">Risk Scoring</h5>
+              <p class="text-slate-500 mt-1">Evaluate exposure severity through rule-based scoring (0-100).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. LOGIN PAGE ================= -->
+      <section id="view-login" class="hidden flex items-center justify-center py-12">
+        <div class="w-full max-w-md bg-white p-8 rounded-2xl border border-slate-200 shadow-xl space-y-6">
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-xl bg-navy-900 text-white flex items-center justify-center mx-auto mb-3">
+              <i data-lucide="shield" class="w-6 h-6 text-sky-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900">Sign in to IdentityShield</h2>
+            <p class="text-xs text-slate-500 mt-1">Access your monitored identities & audit telemetry</p>
+          </div>
+          <form onsubmit="handleLoginSubmit(event)" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 uppercase mb-1">Email / Username</label>
+              <input type="text" id="login-email" value="demo" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900 focus:outline-none" />
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <label class="font-semibold text-slate-700 uppercase">Password</label>
+                <a href="#" onclick="showToast('Use demo password: Password123!');" class="text-blue-900 hover:underline">Forgot password?</a>
+              </div>
+              <input type="password" value="Password123!" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900 focus:outline-none" />
+            </div>
+            <button type="submit" class="w-full py-2.5 bg-navy-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-sm">
+              Sign In
+            </button>
+          </form>
+          <p class="text-center text-xs text-slate-500">
+            Don't have an account? <button onclick="navigate('register')" class="text-blue-900 font-bold hover:underline">Create one</button>
+          </p>
+        </div>
+      </section>
+
+      <!-- ================= 3. REGISTRATION PAGE ================= -->
+      <section id="view-register" class="hidden flex items-center justify-center py-12">
+        <div class="w-full max-w-lg bg-white p-8 rounded-2xl border border-slate-200 shadow-xl space-y-6">
+          <div id="reg-step-1" class="space-y-5">
+            <div class="text-center">
+              <h2 class="text-2xl font-bold text-slate-900">Create Protected Identity</h2>
+              <p class="text-xs text-slate-500 mt-1">Set up your root shielded account to isolate online signups</p>
+            </div>
+            <form onsubmit="handleRegisterSubmit(event)" class="space-y-4 text-xs">
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-semibold text-slate-700 uppercase mb-1">Full Name</label>
+                  <input type="text" id="reg-name" value="Alex Vance" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 uppercase mb-1">Username</label>
+                  <input type="text" id="reg-username" value="alex_v" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900" />
+                </div>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Personal Forwarding Email</label>
+                <input type="email" id="reg-email" value="alex.vance@personal-vault.net" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900" />
+                <p class="text-[10px] text-slate-400 mt-0.5">This personal email is never shared directly with online services.</p>
+              </div>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-semibold text-slate-700 uppercase mb-1">Password</label>
+                  <input type="password" id="reg-pass" value="SafeP@ssw0rd2026!" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 uppercase mb-1">Confirm Password</label>
+                  <input type="password" id="reg-pass-confirm" value="SafeP@ssw0rd2026!" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900" />
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
+                  <span>Password Security</span>
+                  <span class="text-emerald-600 font-bold">Strong</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-emerald-500 h-1.5 rounded-full w-full"></div></div>
+              </div>
+              <label class="flex items-start space-x-2 text-slate-600">
+                <input type="checkbox" checked required class="mt-0.5 rounded border-slate-300 text-navy-900 focus:ring-navy-900" />
+                <span>I understand IdentityShield uses isolated proxies to prevent personal email leaks.</span>
+              </label>
+              <button type="submit" class="w-full py-2.5 bg-navy-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-sm">
+                Generate Root Protected Identity
+              </button>
+            </form>
+          </div>
+
+          <!-- Registration Success Sub-screen -->
+          <div id="reg-step-2" class="hidden text-center space-y-6">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+              <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-slate-900">Protected Identity Created</h3>
+              <p class="text-xs text-slate-500 mt-1">Your isolated root master identity is provisioned:</p>
+            </div>
+            <div class="p-4 rounded-xl bg-navy-900 text-white text-left space-y-2">
+              <p class="text-[10px] font-mono uppercase text-sky-400 font-bold">Root Protected Address</p>
+              <p id="reg-result-protected" class="font-mono text-base font-bold">user-82KF@identityshield.local</p>
+            </div>
+            <button onclick="finishRegistration()" class="w-full py-3 bg-navy-900 hover:bg-slate-800 text-white font-semibold rounded-lg">
+              Enter Workspace Dashboard
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. DASHBOARD ================= -->
+      <section id="view-dashboard" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 id="dash-greeting" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Welcome back, Alex</h1>
+            <p class="text-xs sm:text-sm text-slate-500">Your identity protection overview & exposure telemetry</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="openSimulateModal()" class="px-3 py-2 text-xs font-semibold rounded-lg border border-amber-300 bg-white text-amber-800 hover:bg-amber-50 flex items-center">
+              <i data-lucide="play" class="w-3.5 h-3.5 mr-1.5"></i> Simulate Exposure (Demo)
+            </button>
+            <button onclick="navigate('generate')" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-navy-900 text-white hover:bg-slate-800 flex items-center shadow-sm">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5 mr-1.5"></i> Generate Alias
+            </button>
+          </div>
+        </div>
+
+        <!-- Master Protected Identity Card -->
+        <div class="p-6 rounded-2xl bg-gradient-to-r from-navy-950 via-navy-900 to-slate-900 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-2">
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-400 bg-sky-950 px-2 py-0.5 rounded border border-sky-800">
+              Primary Protected Identity
+            </span>
+            <div class="flex flex-wrap items-center gap-3">
+              <h2 id="dash-protected-identity" class="text-xl sm:text-2xl font-mono font-bold">alex-82KF@identityshield.local</h2>
+              <button onclick="copyToClipboard(document.getElementById('dash-protected-identity').innerText)" class="p-1 rounded hover:bg-slate-800 text-slate-300">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <p class="text-xs text-slate-400 max-w-lg">
+              This master root alias acts as your proxy boundary. Emails sent to your aliases are cryptographically checked here before reaching your personal inbox.
+            </p>
+          </div>
+          <div class="text-xs text-slate-400 space-y-1 md:border-l md:border-slate-800 md:pl-6">
+            <p><span class="text-slate-500 uppercase font-bold text-[10px] block">Created Date</span> May 14, 2026</p>
+            <p><span class="text-slate-500 uppercase font-bold text-[10px] block">Status</span> <span class="text-emerald-400 font-bold">Encrypted & Active</span></p>
+          </div>
+        </div>
+
+        <!-- 6 Metrics Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Services Protected</span>
+            <p id="stat-services" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Active Aliases</span>
+            <p id="stat-active" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Disabled Aliases</span>
+            <p id="stat-disabled" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Exposure Alerts</span>
+            <p id="stat-alerts" class="text-2xl font-bold text-amber-600 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">High Risk</span>
+            <p id="stat-highrisk" class="text-2xl font-bold text-rose-600 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Privacy Score</span>
+            <p id="stat-score" class="text-2xl font-bold text-emerald-600 mt-1">100 / 100</p>
+          </div>
+        </div>
+
+        <!-- Score Breakdown & Actions -->
+        <div class="grid lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-4 bg-white p-6 rounded-xl border border-slate-200 text-center flex flex-col justify-center items-center">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Unified Privacy Score</span>
+            <div class="relative w-32 h-32 flex items-center justify-center">
+              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <path class="text-slate-100" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path id="score-circle" class="text-emerald-500" stroke-dasharray="100, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+              <div class="absolute flex flex-col items-center">
+                <span id="score-text" class="text-3xl font-extrabold text-slate-900">100</span>
+                <span class="text-[10px] font-bold text-slate-400">/ 100</span>
+              </div>
+            </div>
+            <p id="score-label" class="text-xs font-bold text-emerald-700 mt-3">Good Protection</p>
+            <p class="text-[11px] text-slate-500 mt-1">Your identity exposure is currently under control.</p>
+          </div>
+
+          <div class="lg:col-span-8 bg-white p-6 rounded-xl border border-slate-200 flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-sm text-slate-900 uppercase tracking-wider mb-4">Quick Actions</h3>
+              <div class="grid sm:grid-cols-2 gap-3 text-xs">
+                <div onclick="navigate('generate')" class="p-3.5 rounded-lg border border-slate-200 hover:border-navy-900 hover:bg-slate-50 transition cursor-pointer flex items-center space-x-3">
+                  <div class="p-2 bg-blue-100 text-blue-900 rounded-lg"><i data-lucide="plus" class="w-4 h-4"></i></div>
+                  <div><p class="font-bold text-slate-900">Generate Service Alias</p><p class="text-slate-500 text-[11px]">Amazon, Newsletters, etc.</p></div>
+                </div>
+                <div onclick="navigate('exposure')" class="p-3.5 rounded-lg border border-slate-200 hover:border-amber-400 hover:bg-amber-50/40 transition cursor-pointer flex items-center space-x-3">
+                  <div class="p-2 bg-amber-100 text-amber-900 rounded-lg"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>
+                  <div><p class="font-bold text-slate-900">View Exposure Alerts</p><p class="text-slate-500 text-[11px]">Audit unknown senders</p></div>
+                </div>
+                <div onclick="navigate('url-tracker')" class="p-3.5 rounded-lg border border-slate-200 hover:border-sky-400 hover:bg-sky-50/30 transition cursor-pointer flex items-center space-x-3">
+                  <div class="p-2 bg-sky-100 text-sky-900 rounded-lg"><i data-lucide="link-2" class="w-4 h-4"></i></div>
+                  <div><p class="font-bold text-slate-900">URL Security Tracker</p><p class="text-slate-500 text-[11px]">Inspect link risks & protocol</p></div>
+                </div>
+                <div onclick="openSimulateModal()" class="p-3.5 rounded-lg border border-rose-200 bg-rose-50/40 hover:bg-rose-100/60 transition cursor-pointer flex items-center space-x-3">
+                  <div class="p-2 bg-rose-200 text-rose-900 rounded-lg"><i data-lucide="play" class="w-4 h-4"></i></div>
+                  <div><p class="font-bold text-rose-900">Simulate Exposure (Demo)</p><p class="text-rose-700 text-[11px]">Test risk engine alerts</p></div>
+                </div>
+              </div>
+            </div>
+            <div class="pt-4 mt-4 border-t border-slate-100 flex justify-between text-[11px] text-slate-400 font-mono">
+              <span>ACTIVE DATABASE CONNECTION</span>
+              <span>REST API CONNECTED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200">
+          <h3 class="font-bold text-sm text-slate-900 mb-4">Recent Identity Activity</h3>
+          <div class="space-y-3 text-xs" id="activity-timeline">
+            <!-- Dynamic elements render here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. SERVICE ALIAS GENERATOR ================= -->
+      <section id="view-generate" class="hidden max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Generate a Service Alias</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Create a unique, traceable identity before signing up for an online service.</p>
+        </div>
+
+        <!-- Generator Form -->
+        <div id="generator-form-card" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+          <form onsubmit="handleGenerateAlias(event)" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 uppercase mb-1">Service Name <span class="text-rose-500">*</span></label>
+              <input type="text" id="gen-service-name" placeholder="e.g. Amazon, GitHub, Substack, Uber" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900 font-medium" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 uppercase mb-1">Service Domain (Optional)</label>
+              <input type="text" id="gen-service-domain" placeholder="e.g. amazon.com" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900 font-mono" />
+            </div>
+            <div class="p-3.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-start space-x-2.5">
+              <i data-lucide="shield" class="w-4 h-4 text-blue-800 shrink-0 mt-0.5"></i>
+              <span>This alias is strictly bound to this service. Messages received from outside domains trigger immediate exposure alerts.</span>
+            </div>
+            <button type="submit" class="w-full py-3 bg-navy-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-sm">
+              Generate Service Alias
+            </button>
+          </form>
+        </div>
+
+        <!-- Generated Result Card -->
+        <div id="generator-result-card" class="hidden bg-white p-6 sm:p-8 rounded-2xl border border-emerald-300 shadow-md space-y-6 text-center">
+          <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+            <i data-lucide="check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold text-slate-900">Alias Created</h3>
+            <p class="text-xs text-slate-500">Your dedicated identity is ready to use for signups.</p>
+          </div>
+          <div class="bg-navy-900 text-white p-5 rounded-xl space-y-2 text-left">
+            <span class="text-[10px] font-mono text-sky-400 uppercase font-bold">New Dedicated Alias</span>
+            <div class="flex items-center justify-between">
+              <span id="gen-result-alias" class="font-mono text-base font-bold"></span>
+              <button onclick="copyGeneratedAlias()" class="p-1.5 rounded hover:bg-slate-800 text-slate-300"><i data-lucide="copy" class="w-4 h-4"></i></button>
+            </div>
+            <div class="pt-2 border-t border-slate-800 flex justify-between text-xs text-slate-400">
+              <span>Service: <strong id="gen-result-service" class="text-white"></strong></span>
+              <span>Status: <span class="text-emerald-400 font-bold">Active</span></span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600">
+            Use this alias instead of your personal email address when registering on that service.
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button onclick="navigate('services')" class="w-full sm:w-auto px-5 py-2.5 bg-navy-900 text-white font-semibold rounded-lg text-xs">
+              View in Service Monitor
+            </button>
+            <button onclick="resetGenerator()" class="w-full sm:w-auto px-5 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg text-xs hover:bg-slate-50">
+              Generate Another
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 6. SERVICE PRIVACY MONITOR ================= -->
+      <section id="view-services" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Service Privacy Monitor</h1>
+            <p class="text-xs sm:text-sm text-slate-500">Track every service identity from one place.</p>
+          </div>
+          <button onclick="navigate('generate')" class="px-3 py-2 text-xs font-semibold rounded-lg bg-navy-900 text-white hover:bg-slate-800 flex items-center shadow-sm">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 mr-1.5"></i> Add New Service
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <!-- Desktop Table -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="px-5 py-3.5">Service</th>
+                  <th class="px-5 py-3.5">Alias</th>
+                  <th class="px-5 py-3.5">Status</th>
+                  <th class="px-5 py-3.5">Risk</th>
+                  <th class="px-5 py-3.5">Created</th>
+                  <th class="px-5 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="services-table-body" class="divide-y divide-slate-100">
+                <!-- Injected via renderServices() -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Cards Layout -->
+          <div id="services-mobile-cards" class="md:hidden divide-y divide-slate-100">
+            <!-- Injected via renderServices() -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 7. EXPOSURE MONITOR ================= -->
+      <section id="view-exposure" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Exposure Monitor</h1>
+            <p class="text-xs sm:text-sm text-slate-500">Monitor suspicious activity across your service identities.</p>
+          </div>
+          <button onclick="openSimulateModal()" class="px-3 py-2 text-xs font-semibold rounded-lg border border-amber-300 bg-white text-amber-800 hover:bg-amber-50 flex items-center">
+            <i data-lucide="play" class="w-3.5 h-3.5 mr-1.5"></i> Simulate Exposure Event (Demo)
+          </button>
+        </div>
+
+        <!-- Exposure Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Total Events</span>
+            <p id="exp-total" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Low Risk</span>
+            <p id="exp-low" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Medium Risk</span>
+            <p id="exp-med" class="text-2xl font-bold text-amber-600 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">High Risk</span>
+            <p id="exp-high" class="text-2xl font-bold text-orange-600 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-bold uppercase text-slate-500">Critical</span>
+            <p id="exp-crit" class="text-2xl font-bold text-rose-600 mt-1">0</p>
+          </div>
+        </div>
+
+        <!-- Events List -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="px-5 py-3.5">Service</th>
+                  <th class="px-5 py-3.5">Unexpected Sender</th>
+                  <th class="px-5 py-3.5">Risk Score</th>
+                  <th class="px-5 py-3.5">Severity</th>
+                  <th class="px-5 py-3.5">Detected</th>
+                  <th class="px-5 py-3.5">Status</th>
+                  <th class="px-5 py-3.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="exposure-table-body" class="divide-y divide-slate-100">
+                <!-- Injected via renderExposure() -->
+              </tbody>
+            </table>
+          </div>
+          <div id="exposure-mobile-cards" class="md:hidden divide-y divide-slate-100">
+            <!-- Injected via renderExposure() -->
+          </div>
+        </div>
+
+        <!-- Risk System Note -->
+        <div class="bg-navy-900 text-white p-6 rounded-xl space-y-3">
+          <h4 class="font-bold text-sm">Rule-Based Risk Scoring Model</h4>
+          <div class="grid sm:grid-cols-4 gap-3 text-xs text-slate-300">
+            <div class="p-3 bg-slate-800 rounded-lg">
+              <span class="text-emerald-400 font-bold block mb-1">LOW (0–30)</span>
+              Minor sub-domain deviations with matching SPF/DKIM verification.
+            </div>
+            <div class="p-3 bg-slate-800 rounded-lg">
+              <span class="text-amber-400 font-bold block mb-1">MEDIUM (31–60)</span>
+              Unannounced partner directory marketing or affiliated sponsors.
+            </div>
+            <div class="p-3 bg-slate-800 rounded-lg">
+              <span class="text-orange-400 font-bold block mb-1">HIGH (61–80)</span>
+              Unassociated third-party advertising network sent to single-use alias.
+            </div>
+            <div class="p-3 bg-slate-800 rounded-lg">
+              <span class="text-rose-400 font-bold block mb-1">CRITICAL (81–100)</span>
+              Phishing probe or confirmed secondary list selling without opt-in.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 8. EXPOSURE INVESTIGATION PAGE ================= -->
+      <section id="view-investigation" class="hidden max-w-4xl mx-auto space-y-6">
+        <button onclick="navigate('exposure')" class="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5 mr-1.5"></i> Back to Exposure Monitor
+        </button>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span class="text-[10px] font-mono uppercase bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded">INCIDENT AUDIT</span>
+            <h1 id="inv-title" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">Exposure Investigation</h1>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="confirmDisableFromInv()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 text-white">Disable Alias</button>
+            <button onclick="rotateFromInv()" class="px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700">Rotate Alias</button>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl border border-slate-200 space-y-4 text-xs">
+            <h3 class="font-bold text-slate-400 uppercase tracking-wider text-[11px]">Affected Identity</h3>
+            <div>
+              <span class="text-slate-400 block mb-0.5">Affected Alias</span>
+              <p id="inv-alias" class="font-mono text-sm font-bold text-slate-900"></p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div><span class="text-slate-400 block">Associated Service</span><p id="inv-service" class="font-bold text-slate-900"></p></div>
+              <div><span class="text-slate-400 block">Risk Score</span><p id="inv-score" class="font-bold text-rose-600"></p></div>
+            </div>
+            <div>
+              <span class="text-slate-400 block mb-0.5">Unexpected Source</span>
+              <p id="inv-sender" class="font-mono text-rose-700 font-bold bg-rose-50 p-2 rounded border border-rose-200 break-all"></p>
+            </div>
+            <div><span class="text-slate-400 block">First Detected</span><p id="inv-date" class="font-mono text-slate-600"></p></div>
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <span class="font-bold text-slate-800 block mb-1">Reason:</span>
+              <p id="inv-reason" class="text-slate-600"></p>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl border border-slate-200 space-y-4">
+            <h3 class="font-bold text-slate-400 uppercase tracking-wider text-[11px]">Identity Lifecycle Timeline</h3>
+            <div class="pl-4 border-l-2 border-slate-200 space-y-4 text-xs">
+              <div>
+                <p class="font-bold text-slate-900">Identity Created</p>
+                <p class="text-[11px] text-slate-500">Dedicated alias generated for this service.</p>
+              </div>
+              <div>
+                <p class="font-bold text-slate-900">Used on Service</p>
+                <p class="text-[11px] text-slate-500">Used strictly during signup/registration.</p>
+              </div>
+              <div>
+                <p class="font-bold text-slate-900">Normal Activity</p>
+                <p class="text-[11px] text-slate-500">Received expected transactional notifications.</p>
+              </div>
+              <div>
+                <p class="font-bold text-rose-700">Unexpected Sender Detected</p>
+                <p class="text-[11px] text-slate-500">Transmission from unassociated domain logged.</p>
+              </div>
+              <div>
+                <p class="font-bold text-amber-700">Risk Score Increased</p>
+                <p class="text-[11px] text-slate-500">Telemetry engine elevated risk severity.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 8B. NEW: URL SECURITY TRACKER ================= -->
+      <section id="view-url-tracker" class="hidden space-y-6">
+        <div>
+          <div class="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-md bg-sky-100 text-sky-900 text-[11px] font-mono font-bold uppercase mb-1">
+            <span>Heuristic Link Inspection</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">URL Security Tracker</h1>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Check an online link or merchant domain for transport encryption, anomalous structures, and exposure risks.</p>
+        </div>
+
+        <!-- Input Card -->
+        <div class="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <form onsubmit="handleAnalyzeUrl(event)" class="space-y-3">
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Target URL to Inspect</label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <div class="relative flex-1">
+                <input 
+                  type="text" 
+                  id="url-input" 
+                  placeholder="Enter a website or link (e.g. https://example.com/login)..." 
+                  required 
+                  class="w-full pl-9 pr-3 py-2.5 text-xs sm:text-sm font-mono border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy-900 focus:outline-none transition-colors" 
+                />
+                <i data-lucide="link" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+              </div>
+              <button 
+                type="submit" 
+                id="url-scan-btn" 
+                class="px-5 py-2.5 bg-navy-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm flex items-center justify-center space-x-1.5 transition-colors"
+              >
+                <i data-lucide="scan" class="w-4 h-4"></i>
+                <span>Scan URL</span>
+              </button>
+            </div>
+            
+            <!-- Quick Demo Shortcuts -->
+            <div class="pt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <span class="text-[11px] font-medium text-slate-400">Try a demo URL:</span>
+              <button type="button" onclick="setDemoUrl('https://example.com/login')" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 font-mono text-[11px] text-slate-700 transition-colors">
+                https://example.com/login
+              </button>
+              <button type="button" onclick="setDemoUrl('http://insecure-promo.example.org/verify')" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 font-mono text-[11px] text-slate-700 transition-colors">
+                http://insecure-promo.example.org
+              </button>
+              <button type="button" onclick="setDemoUrl('https://shop-checkout.example.net/account/billing?token=verify99')" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 font-mono text-[11px] text-slate-700 transition-colors">
+                https://shop-checkout.example.net/...
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Initial Empty State -->
+        <div id="url-empty-state" class="bg-white p-12 rounded-2xl border border-slate-200 text-center space-y-4">
+          <div class="w-14 h-14 rounded-2xl bg-sky-50 text-sky-700 flex items-center justify-center mx-auto border border-sky-100">
+            <i data-lucide="search" class="w-7 h-7"></i>
+          </div>
+          <div class="max-w-md mx-auto space-y-1">
+            <h3 class="text-base font-bold text-slate-900">Awaiting Target URL</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Enter any link above to inspect its protocol scheme, hostname parameters, suspicious keyword patterns, and structural risk score.
+            </p>
+          </div>
+          <div class="grid sm:grid-cols-3 gap-3 max-w-lg mx-auto pt-2 text-[11px] text-slate-600 font-medium">
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center space-x-1.5">
+              <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Transport Scheme</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center space-x-1.5">
+              <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-600"></i>
+              <span>Domain Breakdown</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center space-x-1.5">
+              <i data-lucide="activity" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Heuristic Risk</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Animated Progress / Loading State -->
+        <div id="url-loading-state" class="hidden bg-white p-10 rounded-2xl border border-slate-200 text-center space-y-4">
+          <div class="w-10 h-10 border-3 border-blue-900 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div>
+            <h4 class="text-sm font-bold text-slate-900">Running Heuristic Inspection</h4>
+            <p id="url-loading-step" class="text-xs text-slate-500 font-mono mt-1">Validating URL structure & transport scheme...</p>
+          </div>
+        </div>
+
+        <!-- Analysis Results Dashboard -->
+        <div id="url-result-dashboard" class="hidden space-y-6">
+          
+          <!-- Top Scan Result Card -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <span class="text-[10px] font-mono uppercase bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded">PROTOTYPE ANALYSIS</span>
+                <h3 class="text-lg font-bold text-slate-900 mt-1">Analysis Report</h3>
+                <p id="url-res-display" class="text-xs font-mono text-slate-600 break-all mt-0.5"></p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span id="url-badge-protocol" class="px-2.5 py-1 rounded-full text-xs font-semibold"></span>
+                <span id="url-badge-status" class="px-2.5 py-1 rounded-full text-xs font-semibold"></span>
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Resolved Hostname</span>
+                <span id="url-res-host" class="font-mono font-bold text-slate-900 break-all"></span>
+              </div>
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Protocol Scheme</span>
+                <span id="url-res-protocol" class="font-mono font-bold text-slate-900"></span>
+              </div>
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Designated Port</span>
+                <span id="url-res-port" class="font-mono font-bold text-slate-900"></span>
+              </div>
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Calculated Risk Score</span>
+                <span id="url-res-score" class="font-mono font-bold text-lg"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mid Split: Domain Info & Suspicious Activity Findings -->
+          <div class="grid md:grid-cols-2 gap-6">
+            
+            <!-- Domain & Structure Information -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4 text-xs">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="info" class="w-4 h-4 text-blue-900"></i>
+                <h3 class="font-bold text-sm text-slate-900">Domain & Path Information</h3>
+              </div>
+              
+              <div class="space-y-2.5 divide-y divide-slate-100">
+                <div class="pt-2 flex justify-between">
+                  <span class="text-slate-500">Full Domain:</span>
+                  <span id="url-tbl-domain" class="font-mono font-semibold text-slate-800"></span>
+                </div>
+                <div class="pt-2 flex justify-between">
+                  <span class="text-slate-500">Hostname:</span>
+                  <span id="url-tbl-host" class="font-mono font-semibold text-slate-800"></span>
+                </div>
+                <div class="pt-2 flex justify-between">
+                  <span class="text-slate-500">Transport:</span>
+                  <span id="url-tbl-transport" class="font-semibold text-slate-800"></span>
+                </div>
+                <div class="pt-2 flex justify-between">
+                  <span class="text-slate-500">Port Mapping:</span>
+                  <span id="url-tbl-port" class="font-mono font-semibold text-slate-800"></span>
+                </div>
+                <div class="pt-2 flex justify-between">
+                  <span class="text-slate-500">Resource Path:</span>
+                  <span id="url-tbl-path" class="font-mono font-semibold text-slate-800 break-all"></span>
+                </div>
+                <div class="pt-2 flex justify-between">
+                  <span class="text-slate-500">Query Parameters:</span>
+                  <span id="url-tbl-query" class="font-mono font-semibold text-slate-800 break-all"></span>
+                </div>
+              </div>
+
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-[11px] text-slate-500">
+                <strong>Note:</strong> Hostname attributes are parsed deterministically from URL components. External DNS/WHOIS records will be populated when the backend threat intelligence pipeline is attached.
+              </div>
+            </div>
+
+            <!-- Suspicious Activity & Findings -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4 text-xs">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-blue-900"></i>
+                <h3 class="font-bold text-sm text-slate-900">Security Findings & Heuristics</h3>
+              </div>
+
+              <div id="url-findings-list" class="space-y-2.5">
+                <!-- Dynamically injected -->
+              </div>
+
+              <!-- Transport Clarification Notice -->
+              <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900 text-[11px] space-y-1">
+                <p class="font-bold">Encryption ≠ Guaranteed Safe Content</p>
+                <p class="text-blue-900/80 leading-relaxed">
+                  HTTPS ensures secure, encrypted in-transit communication, but does not guarantee the destination website is benign. Always check domain authenticity against known merchants.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Analysis Summary -->
+          <div class="bg-navy-900 text-white p-6 rounded-2xl space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-bold uppercase text-sky-400">Heuristic Assessment Summary</span>
+              <span id="url-summary-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
+            </div>
+            <p id="url-summary-text" class="text-xs text-slate-300 leading-relaxed"></p>
+            <div class="pt-2 border-t border-slate-800 text-[10px] text-slate-500 font-mono flex justify-between">
+              <span>SCAN PIPELINE: CLIENT_HEURISTIC_PREVIEW</span>
+              <span>READY FOR BACKEND / THREAT API</span>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ================= 9. PRIVACY DASHBOARD ================= -->
+      <section id="view-privacy" class="hidden space-y-6">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Privacy Dashboard</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Centralized view of identity exposure distribution</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl border border-slate-200 space-y-4">
+            <h3 class="font-bold text-sm text-slate-900">Identity Distribution</h3>
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between mb-1"><span>Active Aliases</span><span id="priv-active-count" class="font-bold">0</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div id="priv-active-bar" class="bg-emerald-500 h-2 rounded-full w-0"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between mb-1"><span>Monitoring</span><span id="priv-mon-count" class="font-bold">0</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div id="priv-mon-bar" class="bg-sky-500 h-2 rounded-full w-0"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between mb-1"><span>Exposed / High Risk</span><span id="priv-exp-count" class="font-bold">0</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div id="priv-exp-bar" class="bg-orange-500 h-2 rounded-full w-0"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between mb-1"><span>Disabled</span><span id="priv-dis-count" class="font-bold">0</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div id="priv-dis-bar" class="bg-slate-400 h-2 rounded-full w-0"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl border border-slate-200 flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-sm text-slate-900 mb-2">Rule-Based Exposure Health</h3>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                Your Privacy Score decreases when an unassociated third-party sender directs messages toward an alias. Disabling compromised aliases stops unauthorized tracking and restores score health.
+              </p>
+            </div>
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 mt-4 text-xs">
+              <span class="font-bold text-slate-800">Deterministic Protection Engine:</span>
+              <p class="text-slate-500 mt-1">100% of tested traffic is filtered through isolated proxy endpoints.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 10. SUMMARY REPORT ================= -->
+      <section id="view-summary" class="hidden max-w-3xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Privacy Summary</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Executive posture overview and recommended actions.</p>
+        </div>
+        <div class="bg-navy-900 text-white p-8 rounded-2xl shadow-lg space-y-6">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <span class="text-xs font-mono uppercase text-sky-400 font-bold">Quarterly Posture</span>
+              <h2 id="sum-score-heading" class="text-3xl font-extrabold mt-1">Protection Score: 100 / 100</h2>
+            </div>
+            <div class="text-center sm:text-right">
+              <span id="sum-total-services" class="text-2xl font-bold text-emerald-400">0 Services</span>
+              <span class="text-[10px] text-slate-400 uppercase block">Total Isolated</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center pt-4 border-t border-slate-800 text-xs">
+            <div class="p-3 bg-slate-800 rounded-lg"><span id="sum-account-age" class="font-bold text-white text-lg block">Live</span><span class="text-slate-400">Account Age</span></div>
+            <div class="p-3 bg-slate-800 rounded-lg"><span id="sum-active-count" class="font-bold text-white text-lg block">0</span><span class="text-slate-400">Active</span></div>
+            <div class="p-3 bg-slate-800 rounded-lg"><span id="sum-disabled-count" class="font-bold text-white text-lg block">0</span><span class="text-slate-400">Disabled</span></div>
+            <div class="p-3 bg-slate-800 rounded-lg"><span id="sum-highrisk-count" class="font-bold text-rose-400 text-lg block">0</span><span class="text-slate-400">High Risk</span></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-slate-200 space-y-4">
+          <h3 class="font-bold text-sm text-slate-900">Recommended Remediation Actions</h3>
+          <div class="space-y-2 text-xs">
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
+              <div>
+                <p class="font-bold text-slate-900">Review one high-risk identity</p>
+                <p class="text-slate-500">Unassociated marketing network detected on Moda Trend alias</p>
+              </div>
+              <button onclick="navigate('exposure')" class="px-3 py-1.5 bg-navy-900 text-white rounded font-medium">Investigate</button>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
+              <div>
+                <p class="font-bold text-slate-900">Rotate exposed alias</p>
+                <p class="text-slate-500">Generate a fresh cryptographic alias for Shopping Portal</p>
+              </div>
+              <button onclick="navigate('services')" class="px-3 py-1.5 border border-slate-300 text-slate-700 rounded font-medium hover:bg-slate-100">Rotate</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 11. ACCOUNT PAGE ================= -->
+      <section id="view-account" class="hidden max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Account Settings</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Profile and root security configuration.</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl border border-slate-200 space-y-4 text-xs">
+          <h3 class="font-bold text-slate-400 uppercase text-[11px]">Personal Information</h3>
+          <div class="space-y-2">
+            <div><span class="text-slate-400 block">Name</span><p id="acc-name" class="font-bold text-slate-900">User</p></div>
+            <div><span class="text-slate-400 block">Username</span><p id="acc-username" class="font-bold text-slate-900">user</p></div>
+            <div><span class="text-slate-400 block">Forwarding Mailbox</span><p id="acc-email" class="font-bold text-slate-900">email@example.com</p></div>
+          </div>
+          <div class="p-4 bg-navy-900 text-white rounded-xl space-y-1">
+            <span class="text-[10px] font-mono uppercase text-sky-400 font-bold">Root Protected Address</span>
+            <p id="acc-protected" class="font-mono text-sm font-bold">user-82KF@identityshield.local</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-slate-200 space-y-4 text-xs">
+          <h3 class="font-bold text-slate-400 uppercase text-[11px]">Security & Sessions</h3>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-bold text-slate-900">Active Sessions</p>
+              <p class="text-slate-500">1 active session (Current Device)</p>
+            </div>
+            <button onclick="logout()" class="px-3 py-1.5 bg-rose-600 text-white rounded font-medium">Log Out All</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= SIMULATE EXPOSURE MODAL ================= -->
+  <div id="simulate-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-md p-6 rounded-2xl border border-slate-200 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base flex items-center">
+          <i data-lucide="play" class="w-4 h-4 mr-2 text-amber-600"></i> Simulate Exposure Event
+        </h3>
+        <button onclick="closeSimulateModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <p class="text-xs text-slate-500">
+        This feature creates a controlled demonstration event so the IdentityShield monitoring and risk-scoring workflow can be tested.
+      </p>
+      <form onsubmit="handleRunSimulation(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 uppercase mb-1">Target Service</label>
+          <select id="sim-target" class="w-full p-2 border border-slate-300 rounded-lg">
+            <!-- Populated via API -->
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 uppercase mb-1">Severity</label>
+          <select id="sim-severity" class="w-full p-2 border border-slate-300 rounded-lg">
+            <option value="High">HIGH (Risk Score: 72)</option>
+            <option value="Critical">CRITICAL (Risk Score: 88)</option>
+            <option value="Medium">MEDIUM (Risk Score: 45)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 uppercase mb-1">Unexpected Sender</label>
+          <input type="text" id="sim-sender" value="unknown@marketing-syndicate-example.com" class="w-full p-2 border border-slate-300 rounded-lg font-mono" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 uppercase mb-1">Activity Type</label>
+          <input type="text" id="sim-type" value="Domain mismatch and partner list resale" class="w-full p-2 border border-slate-300 rounded-lg" />
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeSimulateModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-navy-900 text-white rounded-lg font-semibold">Run Simulation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= INLINE REST API CONNECTOR & CONTROLLER ================= -->
+<!-- ================= INLINE REST API CONNECTOR & CONTROLLER ================= -->
+  <script>
+    // --- 1. REST API Client Layer ---
+    const API_BASE = (window.location.port === "5500" || window.location.port === "3000") 
+      ? "http://127.0.0.1:5000/api" 
+      : "/api";
+
+    async function apiFetch(endpoint, options = {}) {
+      options.credentials = "include"; // Preserves Flask session cookie across ports
+      options.headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, options);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        }
+        return data;
+      } catch (err) {
+        console.error(`API Call [${endpoint}] Error:`, err.message);
+        throw err;
+      }
+    }
+
+    const api = {
+      // Auth
+      register: (data) => apiFetch("/register", { method: "POST", body: JSON.stringify(data) }),
+      login: (data) => apiFetch("/login", { method: "POST", body: JSON.stringify(data) }),
+      logout: () => apiFetch("/logout", { method: "POST" }),
+      getProfile: () => apiFetch("/profile"),
+
+      // Dashboard & Summary
+      getDashboard: () => apiFetch("/dashboard"),
+      getSummary: () => apiFetch("/summary"),
+
+      // Aliases
+      getAliases: () => apiFetch("/aliases"),
+      createAlias: (data) => apiFetch("/aliases", { method: "POST", body: JSON.stringify(data) }),
+      toggleAlias: (id) => apiFetch(`/aliases/${id}`, { method: "PATCH", body: JSON.stringify({ action: "toggle_status" }) }),
+      rotateAlias: (id) => apiFetch(`/aliases/${id}`, { method: "PATCH", body: JSON.stringify({ action: "rotate" }) }),
+
+      // Exposure
+      getExposure: () => apiFetch("/exposure"),
+      getExposureDetail: (id) => apiFetch(`/exposure/${id}`),
+      simulateExposure: (data) => apiFetch("/exposure/simulate", { method: "POST", body: JSON.stringify(data) }),
+
+      // URL Security Tracker
+      analyzeUrl: (data) => apiFetch("/url-analysis", { method: "POST", body: JSON.stringify(data) })
+    };
+
+    // --- 2. Application State Variables ---
+    let currentUser = null;
+    let cachedAliases = [];
+    let cachedEvents = [];
+    let currentInvestigationId = null;
+    let lastGenerated = null;
+
+    const publicViews = ['landing', 'login', 'register'];
+
+    // --- 3. View Switcher & Navigation ---
+    async function navigate(viewName) {
+      window.scrollTo(0, 0);
+
+      // Verify Session from Backend if navigating to a private screen
+      if (!currentUser && !publicViews.includes(viewName)) {
+        try {
+          const res = await api.getProfile();
+          currentUser = res.user;
+          updateSidebarProfile();
+        } catch (e) {
+          viewName = 'login';
+        }
+      }
+
+      // Toggle display of target section
+      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+      const targetSec = document.getElementById(`view-${viewName}`);
+      if (targetSec) targetSec.classList.remove('hidden');
+
+      // Adjust UI headers based on authentication status
+      const isPublic = !currentUser || publicViews.includes(viewName);
+      document.getElementById('public-header').style.display = isPublic ? 'block' : 'none';
+      document.getElementById('app-sidebar').style.display = isPublic ? 'none' : 'flex';
+      document.getElementById('mobile-auth-bar').style.display = isPublic ? 'none' : 'flex';
+
+      // Load data from SQLite backend for the view
+      try {
+        if (viewName === 'dashboard') await loadDashboard();
+        if (viewName === 'services') await loadServices();
+        if (viewName === 'exposure') await loadExposure();
+        if (viewName === 'investigation') await loadInvestigation(currentInvestigationId);
+        if (viewName === 'privacy') await loadPrivacy();
+        if (viewName === 'summary') await loadSummary();
+        if (viewName === 'account') await loadAccount();
+        if (viewName === 'url-tracker') initUrlTracker();
+      } catch (err) {
+        showToast(err.message || "Failed to fetch from backend");
+      }
+
+      lucide.createIcons();
+    }
+
+    function toggleMobileNav() {
+      document.getElementById('mobile-drawer').classList.toggle('hidden');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3200);
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard?.writeText(text);
+      showToast("Copied: " + text);
+    }
+
+    function updateSidebarProfile() {
+      if (!currentUser) return;
+      document.getElementById('sidebar-user-avatar').innerText = currentUser.name.charAt(0).toUpperCase();
+      document.getElementById('sidebar-user-name').innerText = currentUser.name;
+      document.getElementById('sidebar-user-email').innerText = currentUser.protected_identity;
+    }
+
+    // --- 4. Authentication Logic ---
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-email').value.trim();
+      const password = e.target.querySelector('input[type="password"]').value;
+
+      try {
+        const res = await api.login({ username, password });
+        currentUser = res.user;
+        updateSidebarProfile();
+        showToast(`Welcome back, ${currentUser.name}`);
+        navigate('dashboard');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const username = document.getElementById('reg-username').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-pass').value;
+      const confirmPass = document.getElementById('reg-pass-confirm').value;
+
+      if (pass !== confirmPass) {
+        alert("Passwords do not match");
+        return;
+      }
+
+      try {
+        const res = await api.register({ name, username, email, password: pass });
+        currentUser = res.user;
+        updateSidebarProfile();
+        document.getElementById('reg-result-protected').innerText = currentUser.protected_identity;
+        document.getElementById('reg-step-1').classList.add('hidden');
+        document.getElementById('reg-step-2').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function finishRegistration() {
+      document.getElementById('reg-step-1').classList.remove('hidden');
+      document.getElementById('reg-step-2').classList.add('hidden');
+      navigate('dashboard');
+    }
+
+    async function logout() {
+      try {
+        await api.logout();
+      } catch (e) {}
+      currentUser = null;
+      navigate('landing');
+      showToast("Signed out successfully");
+    }
+
+    // --- 5. Dashboard View Logic ---
+    async function loadDashboard() {
+      const res = await api.getDashboard();
+      const d = res.data;
+
+      document.getElementById('dash-greeting').innerText = `Welcome back, ${currentUser?.name?.split(' ')[0] || 'User'}`;
+      document.getElementById('dash-protected-identity').innerText = d.protected_identity;
+      document.getElementById('stat-services').innerText = d.services_protected;
+      document.getElementById('stat-active').innerText = d.active_aliases;
+      document.getElementById('stat-disabled').innerText = d.disabled_aliases;
+      document.getElementById('stat-alerts').innerText = d.exposure_alerts;
+      document.getElementById('stat-highrisk').innerText = d.high_risk;
+      document.getElementById('stat-score').innerText = `${d.privacy_score} / 100`;
+      document.getElementById('score-text').innerText = d.privacy_score;
+      document.getElementById('sidebar-alert-badge').innerText = d.exposure_alerts;
+
+      // Update circular SVG gauge
+      document.getElementById('score-circle').setAttribute('stroke-dasharray', `${d.privacy_score}, 100`);
+
+      // Update Activity Timeline
+      const timeline = document.getElementById('activity-timeline');
+      if (!d.recent_activity || d.recent_activity.length === 0) {
+        timeline.innerHTML = '<p class="text-slate-400 py-2">No suspicious security activity recorded.</p>';
+      } else {
+        timeline.innerHTML = d.recent_activity.map(item => `
+          <div class="flex items-center space-x-3 p-2 rounded-lg bg-slate-50">
+            <span class="w-2 h-2 rounded-full ${item.severity === 'High' || item.severity === 'Critical' ? 'bg-rose-500' : 'bg-amber-500'}"></span>
+            <p class="text-slate-800">Unexpected sender detected for <strong>${item.service}</strong> (${item.severity} Risk)</p>
+            <span class="text-[10px] text-slate-400 ml-auto">${item.detected_at}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    // --- 6. Service Monitor View Logic ---
+    async function loadServices() {
+      const res = await api.getAliases();
+      cachedAliases = res.aliases;
+      const tbody = document.getElementById('services-table-body');
+      const mobileCards = document.getElementById('services-mobile-cards');
+      tbody.innerHTML = '';
+      mobileCards.innerHTML = '';
+
+      if (cachedAliases.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-400">No service aliases created yet.</td></tr>';
+        return;
+      }
+
+      cachedAliases.forEach(a => {
+        const badgeColor = a.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                           a.status === 'Disabled' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                           'bg-amber-50 text-amber-800 border-amber-300';
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="px-5 py-3 font-bold text-slate-900">${a.service}</td>
+            <td class="px-5 py-3 font-mono text-[11px]">${a.alias}</td>
+            <td class="px-5 py-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-semibold border ${badgeColor}">${a.status}</span></td>
+            <td class="px-5 py-3 font-semibold">${a.risk}</td>
+            <td class="px-5 py-3 text-slate-400">${a.created}</td>
+            <td class="px-5 py-3 text-right space-x-1">
+              <button onclick="rotateAliasAction(${a.id})" class="px-2 py-1 text-[11px] border border-slate-300 rounded hover:bg-slate-100">Rotate</button>
+              <button onclick="toggleAliasAction(${a.id})" class="px-2 py-1 text-[11px] border border-slate-300 rounded hover:bg-slate-100">${a.status === 'Disabled' ? 'Enable' : 'Disable'}</button>
+            </td>
+          </tr>
+        `;
+
+        mobileCards.innerHTML += `
+          <div class="p-4 space-y-2 text-xs">
+            <div class="flex justify-between items-start">
+              <span class="font-bold text-slate-900">${a.service}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badgeColor}">${a.status}</span>
+            </div>
+            <p class="font-mono text-slate-600 bg-slate-50 p-1.5 rounded">${a.alias}</p>
+            <div class="flex justify-between items-center pt-1">
+              <span>Risk: <strong>${a.risk}</strong></span>
+              <div class="space-x-1">
+                <button onclick="rotateAliasAction(${a.id})" class="px-2 py-1 border border-slate-300 rounded">Rotate</button>
+                <button onclick="toggleAliasAction(${a.id})" class="px-2 py-1 border border-slate-300 rounded">${a.status === 'Disabled' ? 'Enable' : 'Disable'}</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function toggleAliasAction(id) {
+      try {
+        const res = await api.toggleAlias(id);
+        showToast(res.message);
+        await loadServices();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function rotateAliasAction(id) {
+      try {
+        const res = await api.rotateAlias(id);
+        showToast(res.message);
+        await loadServices();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // --- 7. Alias Generator Logic ---
+    async function handleGenerateAlias(e) {
+      e.preventDefault();
+      const service_name = document.getElementById('gen-service-name').value.trim();
+      const service_domain = document.getElementById('gen-service-domain').value.trim();
+
+      try {
+        const res = await api.createAlias({ service_name, service_domain });
+        lastGenerated = res.alias;
+
+        document.getElementById('generator-form-card').classList.add('hidden');
+        document.getElementById('generator-result-card').classList.remove('hidden');
+        document.getElementById('gen-result-alias').innerText = lastGenerated.alias;
+        document.getElementById('gen-result-service').innerText = lastGenerated.service;
+        showToast(res.message);
+        lucide.createIcons();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function resetGenerator() {
+      document.getElementById('gen-service-name').value = '';
+      document.getElementById('gen-service-domain').value = '';
+      document.getElementById('generator-form-card').classList.remove('hidden');
+      document.getElementById('generator-result-card').classList.add('hidden');
+    }
+
+    function copyGeneratedAlias() {
+      if (lastGenerated) copyToClipboard(lastGenerated.alias);
+    }
+
+    // --- 8. Exposure Monitor Logic ---
+    async function loadExposure() {
+      const res = await api.getExposure();
+      cachedEvents = res.events;
+
+      document.getElementById('exp-total').innerText = cachedEvents.length;
+      document.getElementById('exp-low').innerText = cachedEvents.filter(e => e.severity === 'Low').length;
+      document.getElementById('exp-med').innerText = cachedEvents.filter(e => e.severity === 'Medium').length;
+      document.getElementById('exp-high').innerText = cachedEvents.filter(e => e.severity === 'High').length;
+      document.getElementById('exp-crit').innerText = cachedEvents.filter(e => e.severity === 'Critical').length;
+
+      const tbody = document.getElementById('exposure-table-body');
+      const mobileCards = document.getElementById('exposure-mobile-cards');
+      tbody.innerHTML = '';
+      mobileCards.innerHTML = '';
+
+      if (cachedEvents.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-400">No exposure events detected. All identities protected.</td></tr>';
+        return;
+      }
+
+      cachedEvents.forEach(e => {
+        const sevColor = e.severity === 'High' || e.severity === 'Critical' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                         e.severity === 'Medium' ? 'bg-amber-50 text-amber-800 border-amber-300' :
+                         'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50">
+            <td class="px-5 py-3 font-bold text-slate-900">${e.service}</td>
+            <td class="px-5 py-3 font-mono text-[11px] text-rose-700">${e.sender}</td>
+            <td class="px-5 py-3 font-bold">${e.riskScore}/100</td>
+            <td class="px-5 py-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-semibold border ${sevColor}">${e.severity}</span></td>
+            <td class="px-5 py-3 text-slate-400">${e.detected}</td>
+            <td class="px-5 py-3 font-medium text-slate-600">${e.status}</td>
+            <td class="px-5 py-3 text-right">
+              <button onclick="inspectEvent(${e.id})" class="px-2.5 py-1 bg-navy-900 text-white rounded text-[11px] font-semibold">Investigate</button>
+            </td>
+          </tr>
+        `;
+
+        mobileCards.innerHTML += `
+          <div class="p-4 space-y-2 text-xs">
+            <div class="flex justify-between items-start">
+              <span class="font-bold text-slate-900">${e.service}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${sevColor}">${e.severity}</span>
+            </div>
+            <p class="font-mono text-rose-800 bg-rose-50 p-1.5 rounded">${e.sender}</p>
+            <div class="flex justify-between items-center pt-1">
+              <span>Risk: <strong>${e.riskScore}/100</strong></span>
+              <button onclick="inspectEvent(${e.id})" class="px-2 py-1 bg-navy-900 text-white rounded">Investigate</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function inspectEvent(eventId) {
+      currentInvestigationId = eventId;
+      navigate('investigation');
+    }
+
+    async function loadInvestigation(id) {
+      if (!id) return;
+      const res = await api.getExposureDetail(id);
+      const ev = res.event;
+
+      document.getElementById('inv-title').innerText = `Investigation: ${ev.service}`;
+      document.getElementById('inv-alias').innerText = ev.alias;
+      document.getElementById('inv-service').innerText = ev.service;
+      document.getElementById('inv-score').innerText = `${ev.riskScore} / 100 (${ev.severity})`;
+      document.getElementById('inv-sender').innerText = ev.sender;
+      document.getElementById('inv-date').innerText = ev.firstDetected;
+      document.getElementById('inv-reason').innerText = ev.reason;
+    }
+
+    async function confirmDisableFromInv() {
+      const ev = cachedEvents.find(e => e.id === currentInvestigationId);
+      if (ev) {
+        await api.toggleAlias(ev.aliasId);
+        showToast(`Alias for ${ev.service} disabled`);
+        navigate('exposure');
+      }
+    }
+
+    async function rotateFromInv() {
+      const ev = cachedEvents.find(e => e.id === currentInvestigationId);
+      if (ev) {
+        await api.rotateAlias(ev.aliasId);
+        showToast(`Alias for ${ev.service} rotated`);
+        navigate('exposure');
+      }
+    }
+
+    // --- 8B. URL Security Tracker Logic (Client-Side UI Prototype) ---
+    function initUrlTracker() {
+      // Keep existing analysis if available, otherwise display default empty state
+      if (!document.getElementById('url-input').value.trim()) {
+        document.getElementById('url-empty-state').classList.remove('hidden');
+        document.getElementById('url-loading-state').classList.add('hidden');
+        document.getElementById('url-result-dashboard').classList.add('hidden');
+      }
+    }
+
+    function setDemoUrl(url) {
+      document.getElementById('url-input').value = url;
+    }
+
+    function analyzeUrlMock(rawUrl) {
+      let parsed;
+      try {
+        parsed = new URL(rawUrl);
+      } catch (err) {
+        throw new Error("Invalid URL format. Must begin with http:// or https:// and have a valid host.");
+      }
+
+      const isHttps = parsed.protocol.toLowerCase() === 'https:';
+      const hostname = parsed.hostname;
+      const port = parsed.port || (isHttps ? '443' : '80');
+      const pathname = parsed.pathname || '/';
+      const search = parsed.search || 'None';
+
+      // Rule-based heuristic simulation based on input structure
+      let riskScore = isHttps ? 12 : 55;
+      const findings = [];
+      const suspiciousIndicators = [];
+
+      // 1. Transport evaluation
+      if (isHttps) {
+        findings.push({
+          icon: 'check-circle-2',
+          color: 'text-emerald-600',
+          title: 'HTTPS Encrypted Transport',
+          desc: 'Encrypted communication detected using TLS transport. Note: Transport encryption alone does not guarantee domain legitimacy.',
+          badge: 'LOW',
+          badgeStyle: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        });
+      } else {
+        findings.push({
+          icon: 'alert-triangle',
+          color: 'text-rose-600',
+          title: 'Unencrypted HTTP Transport',
+          desc: 'Data is transmitted in plaintext without TLS encryption. Credentials and session tokens can be intercepted.',
+          badge: 'HIGH',
+          badgeStyle: 'bg-rose-50 text-rose-700 border-rose-200'
+        });
+        suspiciousIndicators.push('Unencrypted communication channel (HTTP)');
+      }
+
+      // 2. Structural & keyword heuristics
+      const lower = rawUrl.toLowerCase();
+      const suspiciousKeywords = ['verify', 'billing', 'token', 'secure-update', 'login-confirm', 'free-gift'];
+      const matchedKw = suspiciousKeywords.filter(kw => lower.includes(kw));
+
+      if (matchedKw.length > 0) {
+        riskScore += 25;
+        findings.push({
+          icon: 'alert-circle',
+          color: 'text-amber-600',
+          title: 'Sensitive Routing Keywords Detected',
+          desc: `URL contains sensitive query/path keywords (${matchedKw.join(', ')}). Verify authenticity before providing credentials.`,
+          badge: 'MEDIUM',
+          badgeStyle: 'bg-amber-50 text-amber-800 border-amber-300'
+        });
+        suspiciousIndicators.push(`Sensitive keyword pattern: ${matchedKw.join(', ')}`);
+      } else {
+        findings.push({
+          icon: 'check',
+          color: 'text-emerald-600',
+          title: 'Standard URL Path Structure',
+          desc: 'No obvious phishing-lure keywords identified in the resource path or query parameters.',
+          badge: 'INFO',
+          badgeStyle: 'bg-slate-100 text-slate-700 border-slate-200'
+        });
+      }
+
+      // 3. Domain formatting check
+      if (hostname.split('.').length > 3) {
+        riskScore += 15;
+        findings.push({
+          icon: 'alert-triangle',
+          color: 'text-orange-600',
+          title: 'Multi-Level Subdomain Structure',
+          desc: 'Hostname includes multiple subdomain tiers. Phishing campaigns often mimic known services with prefix chains.',
+          badge: 'MEDIUM',
+          badgeStyle: 'bg-orange-50 text-orange-800 border-orange-300'
+        });
+        suspiciousIndicators.push('Unusual subdomain depth');
+      } else {
+        findings.push({
+          icon: 'check',
+          color: 'text-emerald-600',
+          title: 'Standard Domain Format',
+          desc: 'Standard top-level domain hierarchy detected without nested prefix redirection.',
+          badge: 'LOW',
+          badgeStyle: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        });
+      }
+
+      // Final clamping
+      riskScore = Math.min(Math.max(riskScore, 5), 98);
+
+      let status = 'SAFE';
+      let statusStyle = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      if (riskScore > 75) {
+        status = 'HIGH RISK';
+        statusStyle = 'bg-rose-50 text-rose-700 border-rose-200';
+      } else if (riskScore > 40) {
+        status = 'SUSPICIOUS';
+        statusStyle = 'bg-amber-50 text-amber-800 border-amber-300';
+      } else {
+        status = 'LOW RISK';
+        statusStyle = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      }
+
+      return {
+        url: rawUrl,
+        protocol: isHttps ? 'HTTPS' : 'HTTP',
+        isHttps,
+        hostname,
+        domain: hostname,
+        port,
+        pathname,
+        search,
+        riskScore,
+        status,
+        statusStyle,
+        findings,
+        suspiciousIndicators
+      };
+    }
+
+    async function handleAnalyzeUrl(e) {
+      e.preventDefault();
+      const input = document.getElementById('url-input').value.trim();
+
+      // Client-side format validation
+      if (!input) {
+        showToast("Please enter a URL to analyze.");
+        return;
+      }
+      if (!input.startsWith('http://') && !input.startsWith('https://')) {
+        alert("Invalid URL. Please enter a valid URL starting with http:// or https://");
+        return;
+      }
+
+      // UI Scanning State Transition
+      document.getElementById('url-empty-state').classList.add('hidden');
+      document.getElementById('url-result-dashboard').classList.add('hidden');
+      document.getElementById('url-loading-state').classList.remove('hidden');
+
+      const stepElem = document.getElementById('url-loading-step');
+      stepElem.innerText = "Validating URL structure & transport scheme...";
+
+      // Brief multi-step simulated scanner animation
+      await new Promise(r => setTimeout(r, 260));
+      stepElem.innerText = "Inspecting domain parameters & query strings...";
+      await new Promise(r => setTimeout(r, 260));
+      stepElem.innerText = "Evaluating heuristic exposure risks...";
+      await new Promise(r => setTimeout(r, 240));
+
+      try {
+        const result = analyzeUrlMock(input);
+
+        // Populate Summary Metrics
+        document.getElementById('url-res-display').innerText = result.url;
+        document.getElementById('url-res-host').innerText = result.hostname;
+        document.getElementById('url-res-protocol').innerText = result.protocol;
+        document.getElementById('url-res-port').innerText = result.port;
+        document.getElementById('url-res-score').innerText = `${result.riskScore} / 100`;
+
+        const scoreElem = document.getElementById('url-res-score');
+        scoreElem.className = `font-mono font-bold text-lg ${result.riskScore > 60 ? 'text-rose-600' : result.riskScore > 35 ? 'text-amber-600' : 'text-emerald-600'}`;
+
+        // Protocol Badge
+        const protoBadge = document.getElementById('url-badge-protocol');
+        protoBadge.innerText = result.isHttps ? 'HTTPS Transport' : 'HTTP Unencrypted';
+        protoBadge.className = `px-2.5 py-1 rounded-full text-xs font-semibold border ${result.isHttps ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
+
+        // Status Badge
+        const statusBadge = document.getElementById('url-badge-status');
+        statusBadge.innerText = result.status;
+        statusBadge.className = `px-2.5 py-1 rounded-full text-xs font-semibold border ${result.statusStyle}`;
+
+        // Populate Table Details
+        document.getElementById('url-tbl-domain').innerText = result.domain;
+        document.getElementById('url-tbl-host').innerText = result.hostname;
+        document.getElementById('url-tbl-transport').innerText = result.isHttps ? 'Encrypted (TLS)' : 'Plaintext (Cleartext)';
+        document.getElementById('url-tbl-port').innerText = result.port;
+        document.getElementById('url-tbl-path').innerText = result.pathname;
+        document.getElementById('url-tbl-query').innerText = result.search;
+
+        // Populate Findings Checklist
+        const findingsList = document.getElementById('url-findings-list');
+        findingsList.innerHTML = result.findings.map(f => `
+          <div class="p-3 rounded-lg border border-slate-200 bg-slate-50/60 flex items-start justify-between gap-2">
+            <div class="flex items-start space-x-2">
+              <i data-lucide="${f.icon}" class="w-4 h-4 ${f.color} mt-0.5 shrink-0"></i>
+              <div>
+                <p class="font-bold text-slate-900 text-xs">${f.title}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">${f.desc}</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${f.badgeStyle}">${f.badge}</span>
+          </div>
+        `).join('');
+
+        // Bottom Assessment Summary
+        const summaryBadge = document.getElementById('url-summary-badge');
+        summaryBadge.innerText = result.status;
+        summaryBadge.className = `px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${result.riskScore > 60 ? 'bg-rose-900/60 text-rose-300 border border-rose-700' : result.riskScore > 35 ? 'bg-amber-900/60 text-amber-300 border border-amber-700' : 'bg-emerald-900/60 text-emerald-300 border border-emerald-700'}`;
+
+        const summaryText = document.getElementById('url-summary-text');
+        if (result.suspiciousIndicators.length > 0) {
+          summaryText.innerText = `Heuristic inspection detected potential risk factors (${result.suspiciousIndicators.join('; ')}). Transport risk evaluation assigned a score of ${result.riskScore}/100. Exercise caution before submitting personal credentials or billing data.`;
+        } else {
+          summaryText.innerText = `The URL adheres to standard hierarchical formatting with valid transport protocol (${result.protocol}). No immediate heuristic red flags identified in this prototype inspection. Evaluated risk score: ${result.riskScore}/100.`;
+        }
+
+        // Display Dashboard
+        document.getElementById('url-loading-state').classList.add('hidden');
+        document.getElementById('url-result-dashboard').classList.remove('hidden');
+        lucide.createIcons();
+
+      } catch (err) {
+        document.getElementById('url-loading-state').classList.add('hidden');
+        document.getElementById('url-empty-state').classList.remove('hidden');
+        alert(err.message);
+      }
+    }
+
+    // --- 9. Exposure Simulation Modal Logic ---
+    async function openSimulateModal() {
+      try {
+        const res = await api.getAliases();
+        const select = document.getElementById('sim-target');
+        select.innerHTML = '';
+        if (res.aliases.length === 0) {
+          showToast("Please generate an alias first before simulating an event.");
+          return;
+        }
+        res.aliases.forEach(a => {
+          select.innerHTML += `<option value="${a.id}">${a.service} (${a.alias})</option>`;
+        });
+        document.getElementById('simulate-modal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (e) {
+        showToast("Backend connection required for simulation.");
+      }
+    }
+
+    function closeSimulateModal() {
+      document.getElementById('simulate-modal').classList.add('hidden');
+    }
+
+    async function handleRunSimulation(e) {
+      e.preventDefault();
+      const alias_id = parseInt(document.getElementById('sim-target').value);
+      const severity = document.getElementById('sim-severity').value;
+      const sender = document.getElementById('sim-sender').value;
+      const activity_type = document.getElementById('sim-type').value;
+
+      try {
+        const res = await api.simulateExposure({ alias_id, severity, sender, activity_type });
+        closeSimulateModal();
+        showToast(res.message);
+        navigate('exposure');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // --- 10. Privacy & Summary Loaders ---
+    async function loadPrivacy() {
+      const res = await api.getAliases();
+      const aliases = res.aliases;
+      const total = aliases.length || 1;
+
+      const active = aliases.filter(a => a.status === 'Active').length;
+      const mon = aliases.filter(a => a.status === 'Monitoring').length;
+      const exp = aliases.filter(a => a.status === 'Exposed').length;
+      const dis = aliases.filter(a => a.status === 'Disabled').length;
+
+      document.getElementById('priv-active-count').innerText = active;
+      document.getElementById('priv-active-bar').style.width = `${(active / total) * 100}%`;
+
+      document.getElementById('priv-mon-count').innerText = mon;
+      document.getElementById('priv-mon-bar').style.width = `${(mon / total) * 100}%`;
+
+      document.getElementById('priv-exp-count').innerText = exp;
+      document.getElementById('priv-exp-bar').style.width = `${(exp / total) * 100}%`;
+
+      document.getElementById('priv-dis-count').innerText = dis;
+      document.getElementById('priv-dis-bar').style.width = `${(dis / total) * 100}%`;
+    }
+
+    async function loadSummary() {
+      const res = await api.getSummary();
+      const s = res.summary;
+
+      document.getElementById('sum-score-heading').innerText = `Protection Score: ${s.privacy_score} / 100`;
+      document.getElementById('sum-total-services').innerText = `${s.services_protected} Services`;
+      document.getElementById('sum-account-age').innerText = s.account_age;
+      document.getElementById('sum-active-count').innerText = s.active_identities;
+      document.getElementById('sum-disabled-count').innerText = s.disabled_identities;
+      document.getElementById('sum-highrisk-count').innerText = s.high_risk_events;
+    }
+
+    async function loadAccount() {
+      if (!currentUser) return;
+      document.getElementById('acc-name').innerText = currentUser.name;
+      document.getElementById('acc-username').innerText = currentUser.username;
+      document.getElementById('acc-email').innerText = currentUser.email;
+      document.getElementById('acc-protected').innerText = currentUser.protected_identity;
+    }
+
+    // --- 11. Initial Entry Point on Page Load ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await api.getProfile();
+        currentUser = res.user;
+        updateSidebarProfile();
+      } catch (e) {
+        currentUser = null;
+      }
+      navigate(currentUser ? 'dashboard' : 'landing');
+    });
+  </script>
+</body>
+</html>
